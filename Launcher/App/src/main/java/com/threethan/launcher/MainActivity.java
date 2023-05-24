@@ -183,8 +183,10 @@ public class MainActivity extends Activity {
         // Handle group click listener
         groupPanelGridView.setOnItemClickListener((parent, view, position, id) -> {
             List<String> groups = settingsProvider.getAppGroupsSorted(false);
+
             if (hasSelection) {
                 GroupsAdapter groupsAdapter = (GroupsAdapter) groupPanelGridView.getAdapter();
+                groups.add(groupsAdapter.HIDDEN_GROUP);
                 for (String app : currentSelectedApps) groupsAdapter.setGroup(app, groups.get(position));
                 hasSelection = false;
                 updateSelectionHint();

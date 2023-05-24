@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.threethan.launcher.platforms.AbstractPlatform;
+import com.threethan.launcher.ui.GroupsAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -214,7 +215,9 @@ public class SettingsProvider {
 
             appListMap.clear();
 
-            for (String group : appGroupsSet) {
+            Set<String> appGroupsSetPlus = appGroupsSet;
+            appGroupsSetPlus.add(GroupsAdapter.HIDDEN_GROUP);
+            for (String group : appGroupsSetPlus) {
                 Set<String> appListSet = new HashSet<>();
                 appListSet = sharedPreferences.getStringSet(KEY_APP_LIST+group, appListSet);
 
@@ -234,7 +237,9 @@ public class SettingsProvider {
             editor.putStringSet(KEY_SELECTED_GROUPS, selectedGroupsSet);
 
             Map<String, Set<String>> appListSetMap = new HashMap<>();
-            for (String group : appGroupsSet) {
+            Set<String> appGroupsSetPlus = appGroupsSet;
+            appGroupsSetPlus.add(GroupsAdapter.HIDDEN_GROUP);
+            for (String group : appGroupsSetPlus) {
                 appListSetMap.put(group, new HashSet<>());
             }
             for (String pkg : appListMap.keySet()) {
