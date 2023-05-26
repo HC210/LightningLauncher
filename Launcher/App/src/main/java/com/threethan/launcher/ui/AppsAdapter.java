@@ -1,9 +1,9 @@
 package com.threethan.launcher.ui;
 
 import android.app.AlertDialog;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -39,7 +39,7 @@ class IconTask extends AsyncTask {
 
     @Override
     protected Object doInBackground(Object[] objects) {
-        final ApplicationInfo currentApp = (ApplicationInfo) objects[1];
+        final PackageInfo currentApp = (PackageInfo) objects[1];
         final MainActivity mainActivityContext = (MainActivity) objects[2];
         final AbstractPlatform appPlatform = AbstractPlatform.getPlatform(currentApp);
         imageView.set((ImageView) objects[3]);
@@ -63,13 +63,13 @@ public class AppsAdapter extends BaseAdapter{
     private static String packageName;
     private static long lastClickTime;
     private final MainActivity mainActivityContext;
-    private final List<ApplicationInfo> appList;
+    private final ArrayList<PackageInfo> appList;
     private final boolean isEditMode;
     private final boolean showTextLabels;
     private final int itemScale;
     private final SettingsProvider settingsProvider;
 
-    public AppsAdapter(MainActivity context, boolean editMode, int scale, boolean names, List<ApplicationInfo> allApps) {
+    public AppsAdapter(MainActivity context, boolean editMode, int scale, boolean names, List<PackageInfo> allApps) {
         mainActivityContext = context;
         isEditMode = editMode;
         showTextLabels = names;
@@ -102,7 +102,7 @@ public class AppsAdapter extends BaseAdapter{
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
 
-        final ApplicationInfo currentApp = appList.get(position);
+        final PackageInfo currentApp = appList.get(position);
         LayoutInflater layoutInflater = (LayoutInflater) mainActivityContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         if (convertView == null) {
@@ -131,7 +131,7 @@ public class AppsAdapter extends BaseAdapter{
 
         // set value into textview
         PackageManager packageManager = mainActivityContext.getPackageManager();
-        String name = SettingsProvider.getAppDisplayName(mainActivityContext, currentApp.packageName, currentApp.loadLabel(packageManager));
+        String name = SettingsProvider.getAppDisplayName(mainActivityContext, currentApp.packageName, currentApp.applicationInfo.loadLabel(packageManager));
         holder.textView.setText(name);
         holder.textView.setVisibility(showTextLabels ? View.VISIBLE : View.GONE);
 
@@ -209,9 +209,9 @@ public class AppsAdapter extends BaseAdapter{
         this.notifyDataSetChanged(); // for real time updates
     }
 
-    private void showAppDetails(ApplicationInfo currentApp) throws PackageManager.NameNotFoundException {
+    private void showAppDetails(PackageInfo currentApp) throws PackageManager.NameNotFoundException {
         // set layout
-        Context context = mainActivityContext;
+        MainActivity context = mainActivityContext;
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
         dialogBuilder.setView(R.layout.dialog_app_details);
         AlertDialog appDetailsDialog = dialogBuilder.create();
@@ -223,7 +223,7 @@ public class AppsAdapter extends BaseAdapter{
 
         // set name
         PackageManager packageManager = mainActivityContext.getPackageManager();
-        String name = SettingsProvider.getAppDisplayName(mainActivityContext, currentApp.packageName, currentApp.loadLabel(packageManager));
+        String name = SettingsProvider.getAppDisplayName(mainActivityContext, currentApp.packageName, currentApp.applicationInfo.loadLabel(packageManager));
         final EditText appNameEditText = appDetailsDialog.findViewById(R.id.app_name);
         appNameEditText.setText(name);
         appDetailsDialog.findViewById(R.id.ok).setOnClickListener(view12 -> {
@@ -240,7 +240,7 @@ public class AppsAdapter extends BaseAdapter{
         tempImage.setClipToOutline(true);
 
         tempImage.setOnClickListener(iconPickerView -> {
-            iconDrawable = currentApp.loadIcon(packageManager);
+            iconDrawable = currentApp.applicationInfo.loadIcon(packageManager);
             packageName = currentApp.packageName;
             iconFile = AbstractPlatform.packageToPath(mainActivityContext, currentApp.packageName);
             if (iconFile.exists()) {

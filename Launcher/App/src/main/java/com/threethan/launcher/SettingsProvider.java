@@ -3,12 +3,14 @@ package com.threethan.launcher;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.threethan.launcher.platforms.AbstractPlatform;
+import com.threethan.launcher.ui.AppsAdapter;
 import com.threethan.launcher.ui.GroupsAdapter;
 
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public class SettingsProvider {
         return SettingsProvider.instance;
     }
 
-    public static String getAppDisplayName(Context context, String pkg, CharSequence label) {
+    public static String getAppDisplayName(MainActivity context, String pkg, CharSequence label) {
         String name = PreferenceManager.getDefaultSharedPreferences(context).getString(pkg, "");
         if (!name.isEmpty()) {
             return name;
@@ -73,19 +75,19 @@ public class SettingsProvider {
         storeValues();
     }
 
-    public ArrayList<ApplicationInfo> getInstalledApps(Context context, List<String> selected, boolean first, List<ApplicationInfo> allApps) {
+    public ArrayList<PackageInfo> getInstalledApps(Context context, List<String> selected, boolean first, List<PackageInfo> allApps) {
 
         // Get list of installed apps
         Map<String, String> apps = getAppList();
 
-        ArrayList<ApplicationInfo> installedApplications = new ArrayList<>();
+        ArrayList<PackageInfo> installedApplications = new ArrayList<>();
 
         Log.i("LauncherStartup", "A0. Start Auto Sort");
 
         //Sort
         if (appGroupsSet.contains(context.getString(R.string.default_apps_group)) && appGroupsSet.contains(context.getString(R.string.android_apps_group))) {
             // Sort if groups are present
-            for (ApplicationInfo app : allApps) {
+            for (PackageInfo app : allApps) {
                 if (!appListMap.containsKey(app.packageName)) {
                     appListMap.put(app.packageName, AbstractPlatform.isVirtualRealityApp(app) ? context.getString(R.string.default_apps_group) : context.getString(R.string.android_apps_group));
                 }
@@ -104,8 +106,8 @@ public class SettingsProvider {
 
         // Put them into a map with package name as keyword for faster handling
         String packageName = context.getApplicationContext().getPackageName();
-        Map<String, ApplicationInfo> appMap = new LinkedHashMap<>();
-        for (ApplicationInfo installedApplication : installedApplications) {
+        Map<String, PackageInfo> appMap = new LinkedHashMap<>();
+        for (PackageInfo installedApplication : installedApplications) {
             String pkg = installedApplication.packageName;
             boolean showAll = selected.isEmpty();
             boolean isNotAssigned = !apps.containsKey(pkg) && first;
@@ -113,7 +115,7 @@ public class SettingsProvider {
             boolean isVr = hasMetadata(installedApplication, "com.samsung.android.vr.application.mode");
             boolean isEnvironment = !isVr && hasMetadata(installedApplication, "com.oculus.environmentVersion");
             if (showAll || isNotAssigned || isInGroup) {
-                boolean isSystemApp = (installedApplication.flags & ApplicationInfo.FLAG_SYSTEM) == 1;
+                boolean isSystemApp = (installedApplication.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 1;
                 String[] systemAppPrefixes = context.getResources().getStringArray(R.array.system_app_prefixes);
                 String[] nonSystemAppPrefixes = context.getResources().getStringArray(R.array.non_system_app_prefixes);
                 for (String prefix : systemAppPrefixes) {
@@ -138,14 +140,11 @@ public class SettingsProvider {
         Log.i("LauncherStartup", "A2. Sort by Package Name");
 
         // Create new list of apps
-        ArrayList<ApplicationInfo> sortedApps = new ArrayList<>(appMap.values());
+        ArrayList<PackageInfo> sortedApps = new ArrayList<>(appMap.values());
         PackageManager packageManager = context.getPackageManager();
         // Compare on app name (fast)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Collections.sort(sortedApps, Comparator.comparing(a -> ((String) a.loadLabel(packageManager))));
-        } else {
-            Log.e("LauncherStartup", "ANDROID VERSION TOO OLD TO SORT APPS!");
-        }
+        Collections.sort(sortedApps, Comparator.comparing(a -> ((String) a.applicationInfo.loadLabel(packageManager))));
+
         // Compare on display name (slow)
         // Collections.sort(sortedApps, Comparator.comparing(a -> ((String) getAppDisplayName(context, a.packageName, a.loadLabel(packageManager)).toUpperCase();)));
 
@@ -154,9 +153,9 @@ public class SettingsProvider {
         return sortedApps;
     }
 
-    public boolean hasMetadata(ApplicationInfo app, String metadata) {
-        if (app.metaData != null) {
-            for (String key : app.metaData.keySet()) {
+    public boolean hasMetadata(PackageInfo app, String metadata) {
+        if (app.applicationInfo.metaData != null) {
+            for (String key : app.applicationInfo.metaData.keySet()) {
                 if (metadata.compareTo(key) == 0) {
                     return true;
                 }
@@ -279,7 +278,7 @@ public class SettingsProvider {
         setSelectedGroups(selectFirst);
     }
 
-    public void setAppDisplayName(Context context, ApplicationInfo appInfo, String newName) {
+    public void setAppDisplayName(MainActivity context, PackageInfo appInfo, String newName) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(appInfo.packageName, newName);

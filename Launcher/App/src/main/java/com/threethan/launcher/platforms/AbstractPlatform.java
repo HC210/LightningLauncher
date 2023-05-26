@@ -3,6 +3,7 @@ package com.threethan.launcher.platforms;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -14,6 +15,9 @@ import android.util.Log;
 
 import androidx.core.content.res.ResourcesCompat;
 
+import com.threethan.launcher.MainActivity;
+import com.threethan.launcher.ui.AppsAdapter;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
@@ -62,7 +65,7 @@ public abstract class AbstractPlatform {
         return success;
     }
 
-    public static AbstractPlatform getPlatform(ApplicationInfo applicationInfo) {
+    public static AbstractPlatform getPlatform(PackageInfo applicationInfo) {
         return new AppPlatform();
     }
 
@@ -147,16 +150,17 @@ public abstract class AbstractPlatform {
         return manufacturer.startsWith("PICO") || manufacturer.startsWith("PİCO"); // PİCO on turkish systems
     }
 
-    public static boolean isVirtualRealityApp(ApplicationInfo applicationInfo) {
-        if (applicationInfo.metaData != null) {
-            return applicationInfo.metaData.keySet().contains("com.oculus.supportedDevices");
+    public static boolean isVirtualRealityApp(PackageInfo packageInfo) {
+        if (packageInfo.applicationInfo.metaData != null) {
+            return packageInfo.applicationInfo.metaData.keySet().contains("com.oculus.supportedDevices");
         }
         return false;
     }
 
     public abstract boolean isSupported(Context context);
 
-    public Drawable loadIcon(Activity activity, ApplicationInfo appInfo) throws PackageManager.NameNotFoundException {
+    public Drawable loadIcon(Activity activity, PackageInfo packageInfo) throws PackageManager.NameNotFoundException {
+        final ApplicationInfo appInfo = packageInfo.applicationInfo;
         PackageManager packageManager = activity.getPackageManager();
         Resources resources;
 
@@ -230,7 +234,7 @@ public abstract class AbstractPlatform {
         }).start();
     }
 
-    public abstract void runApp(Context context, ApplicationInfo applicationInfo);
+    public abstract void runApp(Context context, PackageInfo applicationInfo);
 
     boolean downloadIconFromUrl(String url, File iconFile) {
         try {

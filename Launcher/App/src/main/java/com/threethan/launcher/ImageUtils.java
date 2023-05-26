@@ -1,9 +1,9 @@
 package com.threethan.launcher;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 
 import com.esafirm.imagepicker.features.ImagePicker;
+import com.threethan.launcher.ui.AppsAdapter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,7 +36,7 @@ public class ImageUtils {
         }
     }
 
-    public static void showImagePicker(Activity activity, int requestCode) {
+    public static void showImagePicker(MainActivity activity, int requestCode) {
         ImagePicker imagePicker = ImagePicker.create(activity).single();
         imagePicker.showCamera(false);
         imagePicker.folderMode(true);

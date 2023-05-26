@@ -9,7 +9,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,7 +19,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
@@ -28,7 +27,6 @@ import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -84,7 +82,7 @@ class BackgroundTask extends AsyncTask {
 
 class RecheckPackagesTask extends AsyncTask {
 
-    List<ApplicationInfo> foundApps;
+    List<PackageInfo> foundApps;
     MainActivity owner;
     boolean changeFound;
     @Override
@@ -94,7 +92,7 @@ class RecheckPackagesTask extends AsyncTask {
         owner = (MainActivity) objects[0];
 
         PackageManager packageManager = owner.getPackageManager();
-        foundApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+        foundApps = packageManager.getInstalledPackages(PackageManager.GET_META_DATA);
 
         changeFound = owner.allApps.size() != foundApps.size();
         return null;
@@ -271,7 +269,7 @@ public class MainActivity extends Activity {
             if (!loaded) {
                 // Load Packages
                 PackageManager packageManager = getPackageManager();
-                allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+                allApps = packageManager.getInstalledPackages(PackageManager.GET_META_DATA);
                 // Reload UI
                 reloadUI();
                 loaded = true;
@@ -342,7 +340,7 @@ public class MainActivity extends Activity {
         blurView1.setClipToOutline(true);
     }
 
-    List<ApplicationInfo> allApps;
+    List<PackageInfo> allApps;
     public void reloadUI() {
         Log.i("LauncherStartup", "R0. Execute Background Task");
 
@@ -490,7 +488,7 @@ public class MainActivity extends Activity {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, getResources().getDisplayMetrics());
     }
 
-    public void openApp(ApplicationInfo app) {
+    public void openApp(PackageInfo app) {
 //        //fallback action
 //        new Thread(() -> {
 //            try {
