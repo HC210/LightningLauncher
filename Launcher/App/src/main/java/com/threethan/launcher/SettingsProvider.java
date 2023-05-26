@@ -187,6 +187,7 @@ public class SettingsProvider {
 
     public ArrayList<String> getAppGroupsSorted(boolean selected) {
         readValues();
+        appGroupsSet.remove(GroupsAdapter.HIDDEN_GROUP);
         ArrayList<String> sortedApplicationList = new ArrayList<>(selected ? selectedGroupsSet : appGroupsSet);
         Collections.sort(sortedApplicationList, (a, b) -> {
             String simplifiedNameA = simplifyName(a.toUpperCase());
