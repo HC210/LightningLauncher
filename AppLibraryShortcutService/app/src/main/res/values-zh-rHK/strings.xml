@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_event_name">[應用程式資料庫]</string>
+    <string name="accessibility_event_name">[資料庫]</string>
 </resources>
